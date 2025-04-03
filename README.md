@@ -1,159 +1,121 @@
-# 날씨 시각화 애플리케이션
+# 🛰️ OSS-WeatherWeb
 
-## 📋 프로젝트 개요
+> **네이버 지도 + 기상청 날씨 API를 연동한 실시간 날씨 시각화 웹앱**  
+> 사용자가 선택한 항목(기온/강수량/풍속/습도)을 지도에 마커로 시각화하며,  
+> 지도 줌/이동에 따라 자동으로 해당 지역 날씨 데이터를 갱신합니다.
 
-본 프로젝트는 대한민국 시도별 날씨 정보를 시각화하는 웹 애플리케이션입니다. Vue.js 기반의 프론트엔드와 Express.js 기반의 백엔드로 구성되어 있으며, 공공데이터포털 API 및 네이버 지도 API를 활용합니다.
+---
 
-### 주요 기능
-- 시도별 현재 기온 확인
-- 24시간 내 강수 확률 확인
-- 시도별 풍량 정보 제공
-- 일몰 시간 정보 제공
-- Glassmorphism UI 디자인 적용
+## 🧩 기술 스택
 
-## 🛠️ 기술 스택
+| 구분        | 내용                                           |
+|-------------|------------------------------------------------|
+| 프론트엔드  | Vue 3 (Composition API), 네이버 지도 JS SDK v3 |
+| 백엔드      | Node.js + Express.js                           |
+| API         | [기상청 단기예보 오픈API](https://www.data.go.kr/) |
+| 디자인      | Glassmorphism 스타일링, 반응형 UI               |
 
-### 프론트엔드
-- Vue.js
-- Vuex (상태 관리)
-- Vue Router
-- Axios (HTTP 클라이언트)
-- SCSS
-- Naver Maps API
+---
 
-### 백엔드
-- Node.js
-- Express.js
-- RESTful API 설계
-- 공공데이터포털 오픈 API 연동
+## 📌 주요 기능
 
-## 📡 API 명세
+### 📍 날씨 정보 시각화 (지도 기반)
+- 네이버 지도 위에 실시간 날씨 정보(기온, 강수량, 풍속, 습도)를 **마커로 표시**
+- 항목에 따라 마커 색상 반투명 원으로 시각적 차별화
+- **마우스 오버 시** 정보창 팝업 (클릭 없이 바로 확인)
 
-### 1. 현재 기온 API
+### 🧭 지도 상호작용 기반 업데이트
+- 지도 이동/확대/축소 시 해당 영역의 날씨 정보 자동 업데이트
+- 줌 레벨에 따라 마커 간격 자동 조절 (5km ~ 10km 등)
+
+### ⚠️ 이상값 필터링
+- 기상청 API에서 -999 등 **관측 불가능 지역 마커는 표시되지 않음**
+- 중복 마커 생성 방지 (`Set()`으로 중복 좌표 차단)
+
+### 🧠 헤더 버튼 기능
+- 현재기온, 강수량, 풍속, 습도 중 원하는 항목 선택
+- **선택된 버튼은 시각적으로 구분(배경색/글자색 변경)**
+
+---
+
+## 📂 프로젝트 구조
+
 ```
-GET /api/v1/weather/current-temperature
-```
-
-**Query Parameters**
-- `region` (string): 시도 이름 (예: "서울특별시")
-- `timestamp` (optional): 요청 시각
-
-**Response**
-```json
-{
-  "region": "서울특별시",
-  "temperature": 17.4,
-  "unit": "°C",
-  "timestamp": "2025-04-03T12:00:00Z"
-}
-```
-
-### 2. 강수 확률 API
-```
-GET /api/v1/weather/precipitation
-```
-
-**Query Parameters**
-- `region` (string): 시도 이름
-
-**Response**
-```json
-{
-  "region": "서울특별시",
-  "chance": 40,
-  "unit": "%", 
-  "next24h": true
-}
+OSS-WeatherWeb/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── MapView.vue      # 네이버 지도 + 마커 처리
+│   │   │   └── Header.vue       # 상단 날씨 항목 선택 메뉴
+│   │   └── App.vue
+│   └── public/
+│
+├── backend/
+│   ├── routes/weather.js        # /weather/:type API 처리
+│   ├── services/weatherService.js
+│   ├── utils.js                 # 위경도 → 격자 변환 등
+│   └── server.js                # Express 서버 실행
 ```
 
-### 3. 풍량 API
-```
-GET /api/v1/weather/wind
-```
+---
 
-**Query Parameters**
-- `region` (string): 시도 이름
+## ⚙️ 설치 및 실행 방법
 
-**Response**
-```json
-{
-  "region": "서울특별시",
-  "windSpeed": 3.5,
-  "unit": "m/s"
-}
+### 1. 기상청 API Key 발급
+- [공공데이터포털](https://www.data.go.kr/)에서 **기상청 단기예보 API** 신청
+- `.env` 파일에 다음과 같이 추가:
+
+```env
+SERVICE_KEY=발급받은_디코딩된_서비스키
 ```
 
-### 4. 습도 API
-```
-GET /api/v1/weather/humidity
-```
+---
 
-**Query Parameters**
-- `region` (string): 시도 이름
+### 2. 백엔드 실행
 
-**Response**
-```json
-{
-  "region": "서울특별시",
-  "sunsetTime": "18:44"
-}
-```
-
-## 🚀 설치 및 실행 방법
-
-### 사전 요구사항
-- Node.js 16.x 이상
-- npm 8.x 이상
-- 공공데이터포털 API 키
-- 네이버 Maps API 키
-
-### 설치
-
-1. 저장소 클론
-```bash
-git clone https://github.com/eunly00/OSS-WeatherWeb.git
-cd OSS-WeatherWeb
-```
-
-2. 백엔드 설정
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# .env 파일에 API 키 설정
+npm run dev
 ```
 
-3. 프론트엔드 설정
+- 실행 포트: `http://localhost:3000`
+- 엔드포인트 예시: `GET /weather/temp?lat=37.5&lon=126.9`
+
+---
+
+### 3. 프론트엔드 실행
+
 ```bash
 cd frontend
 npm install
-cp .env.example .env
-# .env 파일에 API 키 설정
-```
-
-### 실행
-
-1. 백엔드 서버 실행
-```bash
-cd backend
-npm run start
-```
-
-2. 프론트엔드 개발 서버 실행
-```bash
-cd frontend
 npm run serve
 ```
 
-3. 브라우저에서 접속
-```
-http://localhost:8080
-```
+- 실행 포트: `http://localhost:8080`
+- `.env` 파일 없이도 동작 가능
 
-## 📱 화면 구성
+---
 
-1. **현재 기온**: 시도별 현재 기온 상세 정보 및 그래프
-2. **24시간내 강수량**: 시간대별 강수 확률 및 예상 강수량
-3. **풍량**: 시도별 풍향 및 풍속 정보
-4. **습도**: 시도별 습도 정보
+## 🖼️ UI 예시
 
+- 📌 **마커:** 항목별 색상 적용된 원형 (Glassmorphism 스타일)
+- 🧭 **헤더:** 버튼 클릭 시 항목 전환 및 선택된 버튼 강조
+- 🌐 **지도 반응:** 이동/줌 변경 시 자동 마커 갱신
+
+---
+
+## 🚀 향후 개선 아이디어
+
+- 기상청 API 캐싱 또는 좌표당 debounce 처리
+- 특정 시군구 단위로 행정 구역 정보 병기
+- 일별 예보 / 주간예보 기능 추가
+- 날씨에 따라 마커 아이콘 변화 (예: 비/눈/바람 등)
+
+---
+
+## 🙌 제작자
+
+- **Frontend/Backend**: Eunsong Park
+- **지도 데이터**: 네이버 지도 JavaScript API
+- **날씨 데이터**: 기상청 공공데이터 API
