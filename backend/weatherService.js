@@ -6,7 +6,8 @@ const CATEGORY_MAP = {
   temp: 'T1H',   // 기온
   rain: 'RN1',   // 1시간 강수량
   wind: 'WSD',   // 풍속
-  humid: 'REH'   // 습도
+  humid: 'REH' ,  // 습도
+  humidity: 'REH'
 };
 
 // 단위 설정
@@ -16,6 +17,7 @@ function getUnit(type) {
     case 'rain': return 'mm';
     case 'wind': return 'm/s';
     case 'humid': return '%';
+    case 'humidity': return '%';
     default: return '';
   }
 }
