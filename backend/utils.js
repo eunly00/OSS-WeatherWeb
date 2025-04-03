@@ -40,16 +40,20 @@ function convertToXY(lat, lon) {
   // 기상청 단기예보 API용 base_date, base_time 계산
   function getBaseDateTime() {
     const now = new Date();
+    if (now.getHours() < 12) {
+      now.setDate(now.getDate() - 1);
+    }
   
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const date = String(now.getDate()).padStart(2, '0');
   
     const baseDate = `${year}${month}${date}`;
-    const baseTime = '0600'; // ✅ 12시 정오 고정
+    const baseTime = '1100'; // ✅ 12시 정오 고정
   
     return { baseDate, baseTime };
   }
+  
   
   module.exports = {
     convertToXY,

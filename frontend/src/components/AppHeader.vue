@@ -47,5 +47,13 @@
   button:hover {
     background: rgba(255, 255, 255, 0.4);
   }
+  
+  button.active {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+  font-weight: bold;
+  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+}
+  
   </style>
   
