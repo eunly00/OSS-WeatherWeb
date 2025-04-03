@@ -17,6 +17,10 @@
   
     mounted() {
       this.initMap();
+      // 지도 이동/확대 후 이벤트
+        naver.maps.Event.addListener(this.map, 'idle', () => {
+            this.updateMarkersInBounds();
+  });
     },
   
     watch: {
@@ -75,7 +79,55 @@
             console.error(`❌ ${loc.name} 날씨 데이터 가져오기 실패`, err);
           }
         });
+      },
+      
+  async updateMarkersInBounds() {
+    // 기존 마커 제거
+    this.markers.forEach(m => m.setMap(null));
+    this.markers = [];
+
+    const bounds = this.map.getBounds();
+    const sw = bounds.getSW(); // 남서쪽
+    const ne = bounds.getNE(); // 북동쪽
+
+    const latStep = 0.06; // 약 5km 간격
+    const lonStep = 0.07;
+
+    for (let lat = sw.y; lat <= ne.y; lat += latStep) {
+      for (let lon = sw.x; lon <= ne.x; lon += lonStep) {
+        try {
+          const res = await fetch(`http://localhost:3000/weather/${this.layer}?lat=${lat}&lon=${lon}`);
+          const data = await res.json();
+          const value = `${data.value}${data.unit}`;
+
+          const marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(lat, lon),
+            map: this.map
+          });
+
+          const infoWindow = new naver.maps.InfoWindow({
+            content: `
+              <div style="background: rgba(255,255,255,0.8); padding: 8px; border-radius: 10px;">
+                <strong>${value}</strong>
+              </div>`,
+            borderWidth: 0
+          });
+
+          naver.maps.Event.addListener(marker, 'click', () => {
+            infoWindow.open(this.map, marker);
+          });
+
+          this.markers.push(marker);
+        } catch (err) {
+          console.error(`❌ 날씨 데이터 로드 실패 (lat=${lat}, lon=${lon})`, err);
+        }
       }
+    }
+  }
+
+
+
+
     }
   };
   </script>
